@@ -1,0 +1,29 @@
+# Runs every test on each change, so a broken change is caught before it goes live.
+
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Bot tests
+        working-directory: bot
+        run: npm ci && npm run typecheck && npm test
+
+      - name: Scraper tests (including the full end-to-end run and a real browser)
+        working-directory: scraper
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm run typecheck
+          npm test

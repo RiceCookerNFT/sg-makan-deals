@@ -1,0 +1,92 @@
+# Puts the bot online. Runs automatically when bot code changes, or by hand
+# (Actions tab -> "Deploy bot" -> "Run workflow").
+# It creates the database if needed, sets up its tables, uploads the bot,
+# stores its secrets, and connects it to Telegram. Nothing to install locally.
+
+name: Deploy bot
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['bot/**', 'shared/**', '.github/workflows/deploy.yml']
+
+concurrency: deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: bot
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: bot/package-lock.json
+
+      - name: Check settings
+        run: |
+          for name in CF_API_TOKEN CF_ACCOUNT_ID BOT_TOKEN WEBHOOK_SECRET ADMIN_KEY; do
+            if [ -z "${!name}" ]; then echo "::error::Missing GitHub secret $name (see README, step 3)"; exit 1; fi
+          done
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+          ADMIN_KEY: ${{ secrets.ADMIN_KEY }}
+
+      - run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Create the database (first time only)
+        run: |
+          ID=$(npx wrangler d1 list --json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const d=JSON.parse(s).find(x=>x.name==='makan-deals');console.log(d?d.uuid:'')})")
+          if [ -z "$ID" ]; then
+            npx wrangler d1 create makan-deals --location apac
+            ID=$(npx wrangler d1 list --json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{console.log(JSON.parse(s).find(x=>x.name==='makan-deals').uuid)})")
+          fi
+          sed -i "s/PASTE_YOUR_DATABASE_ID_HERE/$ID/" wrangler.toml
+          echo "Database id: $ID"
+
+      - name: Create or update tables
+        run: npx wrangler d1 execute makan-deals --remote --file=schema.sql --yes
+
+      - name: Upload the bot
+        id: deploy
+        run: |
+          npx wrangler deploy --var GH_REPO:${{ github.repository }} --var ADMIN_CHAT_ID:"${{ secrets.ADMIN_CHAT_ID }}" | tee deploy.log
+          URL=$(grep -oE 'https://[a-zA-Z0-9.-]+\.workers\.dev' deploy.log | head -1)
+          if [ -z "$URL" ]; then echo "::error::No workers.dev address. Open Workers & Pages in the Cloudflare dashboard once to pick your free workers.dev subdomain, then re-run."; exit 1; fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Store secrets in Cloudflare
+        run: |
+          printf '%s' "$BOT_TOKEN" | npx wrangler secret put BOT_TOKEN
+          printf '%s' "$WEBHOOK_SECRET" | npx wrangler secret put WEBHOOK_SECRET
+          printf '%s' "$ADMIN_KEY" | npx wrangler secret put ADMIN_KEY
+          if [ -n "$GH_TOKEN" ]; then printf '%s' "$GH_TOKEN" | npx wrangler secret put GH_TOKEN; fi
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+          ADMIN_KEY: ${{ secrets.ADMIN_KEY }}
+          GH_TOKEN: ${{ secrets.GH_DISPATCH_TOKEN }}
+
+      - name: Connect the bot to Telegram
+        run: |
+          sleep 5
+          RESULT=$(curl -sS "${{ steps.deploy.outputs.url }}/setup?key=$ADMIN_KEY")
+          echo "$RESULT" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const r=JSON.parse(s);if(!r.webhook?.ok){console.error('Telegram said:',JSON.stringify(r.webhook));process.exit(1)}console.log('Telegram connected ✅')})"
+          echo "### 🍜 Bot is live at ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          ADMIN_KEY: ${{ secrets.ADMIN_KEY }}

@@ -1,0 +1,20 @@
+{
+  "rss": [
+    {
+      "name": "Little Big Red Dot",
+      "url": "https://littlebigreddot.com/feed/",
+      "enabled": true,
+      "categories": ["Food & Drinks", "Deals", "Food"],
+      "maxAgeDays": 21,
+      "maxItems": 25
+    }
+  ],
+  "pages": [
+    {
+      "name": "Example brand promotions page (replace me)",
+      "url": "https://www.example.com/promotions",
+      "brand": "Example Brand",
+      "enabled": false
+    }
+  ]
+}

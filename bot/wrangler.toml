@@ -1,0 +1,24 @@
+name = "sg-makan-deals"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+# Runs every minute (Cloudflare uses UTC; the code converts to Singapore time).
+[triggers]
+crons = ["* * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "makan-deals"
+database_id = "PASTE_YOUR_DATABASE_ID_HERE"
+
+[vars]
+GH_REPO = ""            # e.g. "yourname/sg-makan-deals" – lets the bot start the scraper
+ADMIN_CHAT_ID = ""      # your Telegram chat id (optional)
+ALERT_BATCH = "25"      # alerts per minute; 25/min x 60 min = 1,500 people per window
+LUNCH_START = "11:30"
+DINNER_START = "18:00"
+ALERT_WINDOW_MIN = "60"
+SCRAPE_TIMES = "10:00,16:00"
+
+[observability]
+enabled = true

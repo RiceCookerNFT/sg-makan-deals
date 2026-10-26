@@ -1,0 +1,47 @@
+# Collects deals and writes them into the bot's database.
+# Normally started by the bot itself at 10:00 and 16:00 Singapore time (exact).
+# The schedule below is a backup in case that isn't set up; GitHub's timer can
+# run late, and a second run on the same day costs almost nothing (cached).
+
+name: Scrape deals
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 2,8 * * *'   # 10:17 and 16:17 Singapore time (backup)
+
+concurrency:
+  group: scrape
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: scraper
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: scraper/package-lock.json
+
+      - run: npm ci
+
+      - name: Install the Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Find and save deals
+        run: npm run scrape
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          ONEMAP_EMAIL: ${{ secrets.ONEMAP_EMAIL }}
+          ONEMAP_PASSWORD: ${{ secrets.ONEMAP_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
+          PROJECT_URL: ${{ github.server_url }}/${{ github.repository }}

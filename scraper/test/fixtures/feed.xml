@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<channel>
+  <title>Test Deals Site</title>
+  <link>https://deals.test/</link>
+  <item>
+    <title>5 lunch deals around Singapore this week ({{DATE+0}}&#8211;{{DATE+6}})</title>
+    <link>https://deals.test/lunch-deals-this-week/</link>
+    <pubDate>{{RFC-1}}</pubDate>
+    <category><![CDATA[Food & Drinks]]></category>
+    <category><![CDATA[Deals]]></category>
+    <content:encoded><![CDATA[
+<p>Lunch is getting expensive, so here are this week&#8217;s best food deals.</p>
+<h2>1. McDonald&#8217;s pre-payday meals</h2>
+<p>McDonald&#8217;s is running pre-payday lunch meals from S$6.90 at participating outlets until {{DATE+4}}.</p>
+<p>The deal is only available when you order through the McDonald&#8217;s app.</p>
+<h2>2. Luckin Coffee 1-for-1</h2>
+<p>Luckin Coffee has 1-for-1 lattes at all outlets from {{DATE+1}} to {{DATE+3}}, while stocks last.</p>
+<h2>3. Tembusu weekday set</h2>
+<p>Tembusu at 1 Cluny Road is offering 20% off its weekday lunch set until {{DATE+10}} for diners who book ahead.</p>
+<h2>4. Sneaker sale</h2>
+<p>Nike is giving an extra 30% off sale shoes until {{DATE+6}}.</p>
+<h2>5. Last call</h2>
+<p>Kopi Corner&#8217;s $1 kopi promotion ended on {{DATE-2}}, sadly.</p>
+<figure><img src="x.jpg"/><figcaption>Photo caption that should be removed</figcaption></figure>
+]]></content:encoded>
+  </item>
+  <item>
+    <title>Singapore Airlines adds flights to Madrid</title>
+    <link>https://deals.test/flights/</link>
+    <pubDate>{{RFC-1}}</pubDate>
+    <category><![CDATA[Travel]]></category>
+    <content:encoded><![CDATA[<p>New flights. Not food.</p>]]></content:encoded>
+  </item>
+  <item>
+    <title>Old 1-for-1 deals from last month</title>
+    <link>https://deals.test/old-deals/</link>
+    <pubDate>{{RFC-50}}</pubDate>
+    <category><![CDATA[Food & Drinks]]></category>
+    <content:encoded><![CDATA[<p>These are old.</p>]]></content:encoded>
+  </item>
+  <item>
+    <title>1-for-1 bubble tea at Gong Cha this Friday</title>
+    <link>https://deals.test/gong-cha/</link>
+    <pubDate>{{RFC-1}}</pubDate>
+    <category><![CDATA[News]]></category>
+    <description><![CDATA[<p>Short summary only.</p>]]></description>
+  </item>
+</channel>
+</rss>

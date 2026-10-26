@@ -1,0 +1,22 @@
+{
+  "name": "sg-makan-deals-scraper",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "scrape": "tsx src/run.ts",
+    "scrape:dry": "tsx src/run.ts --dry-run",
+    "try-page": "tsx src/try-page.ts",
+    "test": "tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.11.2",
+    "playwright": "^1.64.1",
+    "tsx": "^4.23.15"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "miniflare": "^4.20260730.0",
+    "typescript": "^5.6.0"
+  }
+}
